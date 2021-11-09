@@ -1,7 +1,31 @@
+variable "pub_key" {
+  default = "~/.ssh/id_rsa.pub"
+}
+
+variable "ssh_username" {
+  default = "amine"
+}
+
+variable "project" {
+  default = "projet-sdtd"
+}
+
+variable "project_region" {
+  default = "us-central1"
+}
+
+variable "project_zone" {
+  default = "us-central1-c"
+}
+
+variable "playbook_master" {
+  default = "playbook_example.yml"
+}
+
 provider "google" {
-  project = "projet-sdtd"
-  region  = "us-central1"
-  zone    = "us-central1-c"
+  project = "${var.project}"
+  region  = "${var.project_region}"
+  zone    = "${var.project_zone}"
 }
 
 // Une addresse ipv4 publique qu'on va allouer à la vm master
@@ -14,7 +38,21 @@ resource "google_compute_address" "static_worker" {
   name = "ipv4-address-worker"
 }
 
-// A single Compute Engine instance
+resource "google_compute_firewall" "default" {
+  name = "network-firewall"
+  network = "default"
+
+  // Le 80 est que pour tester le nginx
+  allow {
+    protocol = "tcp"
+    ports = ["22","80"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
+
+// Le compute engine qui sera le master
 resource "google_compute_instance" "masterserver" {
   name         = "master-server"
   machine_type = "e2-highcpu-2"
@@ -25,6 +63,10 @@ resource "google_compute_instance" "masterserver" {
     }
   }
 
+  metadata = {
+    ssh-keys = "${var.ssh_username}:${file(var.pub_key)}"
+  }
+
   network_interface {
     network = "default"
 
@@ -33,9 +75,25 @@ resource "google_compute_instance" "masterserver" {
       nat_ip = "${google_compute_address.static_master.address}"
     }
   }
+
+  // On lance le remote-exec avant pour s'assurer que la machine est bien en marche avant de lancer le local-exec
+  provisioner "remote-exec" {
+    inline = ["sudo apt update"]
+
+    connection {
+      host = self.network_interface.0.access_config.0.nat_ip
+      type = "ssh"
+      user = "${var.ssh_username}"
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' ${var.playbook_master}"
+    //command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} -e 'pub_key=${var.pub_key}' playbook_example.yml"
+  }
 }
 
-// A single Compute Engine instance
+// Le compute engine qui sera le worker
 resource "google_compute_instance" "workerserver" {
   name         = "worker-server"
   machine_type = "e2-highcpu-2"
@@ -56,32 +114,13 @@ resource "google_compute_instance" "workerserver" {
   }
 }
 
-// A machine for testing on the same network 
-resource "google_compute_instance" "testserver" {
-  name         = "test-server"
-  machine_type = "f1-micro"
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-9"
-    }
-  }
-
-  network_interface {
-    network = "default"
-
-    access_config {
-      // Include this section to give the VM an external ip address
-    }
-  }
-}
-
 // Output après un apply
-// On pourrait aussi invoquer cet output (terraform output ip_master)
+// On pourrait invoquer cet output avec la commande : terraform output ip_master
 output "ip_master" {
   value="${google_compute_instance.masterserver.network_interface.0.access_config.0.nat_ip}"
 }
 
+// On pourrait invoquer cet output avec la commande : terraform output ip_worker
 output "ip_worker" {
   value="${google_compute_instance.workerserver.network_interface.0.access_config.0.nat_ip}"
 }
