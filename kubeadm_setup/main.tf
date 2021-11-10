@@ -1,9 +1,13 @@
+variable "pvt_key" {
+  default = "~/.ssh/id_rsa"
+}
+
 variable "pub_key" {
   default = "~/.ssh/id_rsa.pub"
 }
 
 variable "ssh_username" {
-  default = "amine"
+  default = "aminerachyd99"
 }
 
 variable "project" {
@@ -84,12 +88,12 @@ resource "google_compute_instance" "masterserver" {
       host = self.network_interface.0.access_config.0.nat_ip
       type = "ssh"
       user = "${var.ssh_username}"
+      private_key = file(var.pvt_key)
     }
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' ${var.playbook_master}"
-    //command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} -e 'pub_key=${var.pub_key}' playbook_example.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.playbook_master}"
   }
 }
 
