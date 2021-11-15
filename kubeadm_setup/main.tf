@@ -1,32 +1,17 @@
-variable "pub_key" {
-  default = "~/.ssh/id_rsa.pub"
-}
-
-variable "ssh_username" {
-  default = "amine"
-}
-
-variable "project" {
-  default = "projet-sdtd"
-}
-
-variable "project_region" {
-  default = "us-central1"
-}
-
-variable "project_zone" {
-  default = "us-central1-c"
-}
-
-variable "playbook_master" {
-  default = "playbook_example.yml"
-}
+variable "pub_key" {}
+variable "ssh_username" {}
+variable "project" {}
+variable "project_region" {}
+variable "project_zone" {}
+variable "playbook_master" {}
 
 provider "google" {
   project = "${var.project}"
   region  = "${var.project_region}"
   zone    = "${var.project_zone}"
 }
+
+// Enable GCE API
 
 // Une addresse ipv4 publique qu'on va allouer à la vm master
 resource "google_compute_address" "static_master" {
@@ -89,7 +74,6 @@ resource "google_compute_instance" "masterserver" {
 
   provisioner "local-exec" {
     command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' ${var.playbook_master}"
-    //command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} -e 'pub_key=${var.pub_key}' playbook_example.yml"
   }
 }
 
