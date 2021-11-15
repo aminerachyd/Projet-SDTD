@@ -1,3 +1,4 @@
+variable "pvt_key" {}
 variable "pub_key" {}
 variable "ssh_username" {}
 variable "project" {}
@@ -12,15 +13,27 @@ provider "google" {
 }
 
 // Enable GCE API
+resource "google_project_service" "compute_service" {
+  project = "${var.project}"
+  service = "compute.googleapis.com"
+}
 
 // Une addresse ipv4 publique qu'on va allouer à la vm master
 resource "google_compute_address" "static_master" {
   name = "ipv4-address-master"
+
+  depends_on = [
+    google_project_service.compute_service,
+  ]
 }
 
 // Une addresse ipv4 publique qu'on va allouer à la vm worker
 resource "google_compute_address" "static_worker" {
   name = "ipv4-address-worker"
+
+  depends_on = [
+    google_project_service.compute_service,
+  ]
 }
 
 resource "google_compute_firewall" "default" {
@@ -34,6 +47,10 @@ resource "google_compute_firewall" "default" {
   }
 
   source_ranges = ["0.0.0.0/0"]
+
+  depends_on = [
+    google_project_service.compute_service,
+  ]
 }
 
 
@@ -61,6 +78,10 @@ resource "google_compute_instance" "masterserver" {
     }
   }
 
+  depends_on = [
+    google_project_service.compute_service,
+  ]
+
   // On lance le remote-exec avant pour s'assurer que la machine est bien en marche avant de lancer le local-exec
   provisioner "remote-exec" {
     inline = ["sudo apt update"]
@@ -69,11 +90,12 @@ resource "google_compute_instance" "masterserver" {
       host = self.network_interface.0.access_config.0.nat_ip
       type = "ssh"
       user = "${var.ssh_username}"
+      private_key = file(var.pvt_key)
     }
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' ${var.playbook_master}"
+    command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.playbook_master}"
   }
 }
 
@@ -96,6 +118,10 @@ resource "google_compute_instance" "workerserver" {
       nat_ip = "${google_compute_address.static_worker.address}"
     }
   }
+
+  depends_on = [
+    google_project_service.compute_service,
+  ]
 }
 
 // Output après un apply

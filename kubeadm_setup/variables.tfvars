@@ -1,3 +1,4 @@
+pvt_key = "~/.ssh/id_rsa"
 pub_key = "~/.ssh/id_rsa.pub"
 ssh_username = "amine"
 project = "projet-sdtd"
