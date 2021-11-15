@@ -95,7 +95,7 @@ resource "google_compute_instance" "masterserver" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.playbook_master}"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.playbook_master}"
   }
 }
 
