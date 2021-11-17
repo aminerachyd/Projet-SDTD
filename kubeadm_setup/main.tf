@@ -4,7 +4,11 @@ variable "ssh_username" {}
 variable "project" {}
 variable "project_region" {}
 variable "project_zone" {}
-variable "playbook_master" {}
+
+// Les playbooks
+variable "docker_playbook" {}
+variable "k8s_playbook" {}
+variable "kubeadm_master_playbook" {}
 
 provider "google" {
   project = "${var.project}"
@@ -94,8 +98,21 @@ resource "google_compute_instance" "masterserver" {
     }
   }
 
+  // Playbook d'installation de Docker
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.playbook_master}"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.docker_playbook}"
+  }
+
+  // Playbook d'installation de Kubeadm
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.k8s_playbook}"
+  }
+
+  // TODO Faut reboot la machine à ce niveau
+
+  // Playbook d'init de Kubeadm pour le master
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.kubeadm_master_playbook}"
   }
 }
 

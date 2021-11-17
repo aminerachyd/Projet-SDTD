@@ -1,0 +1,15 @@
+- become: yes
+  hosts: all
+  tasks:
+    - name: Init Kubeadm
+      shell: sudo kubeadm init
+
+    - name: Create .kube directory
+      file:
+        path: ~/.kube
+        state: directory
+
+    - name: Copy k8s configuration to .kube dir
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: ~/.kube/conf

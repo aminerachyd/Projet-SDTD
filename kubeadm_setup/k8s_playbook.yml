@@ -1,0 +1,34 @@
+- become: yes
+  hosts: all
+  tasks:
+    - name: Modifying iptables
+      shell: |
+        cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+        net.bridge.bridge-nf-call-ip6tables = 1
+        net.bridge.bridge-nf-call-iptables = 1
+        EOF
+
+    - name: Reload kernel modifications
+      shell: sudo sysctl --system
+
+    - name: Add K8s GPG apt Key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add K8s Repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Update apt and install kubelet, kubeadm and kubectl
+      apt:
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: latest
+        update_cache: yes
+
+    - name: Disable swap
+      shell: sudo swapoff -a

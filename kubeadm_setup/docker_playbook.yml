@@ -24,21 +24,28 @@
         state: latest
         update_cache: yes
 
-    - name: Add user to docker group and reboot the machine
+    - name: Add user to docker group
       user:
-        name: amine # A changer dynamiquement
+        name: amine
         groups: docker
         append: yes
-      notify: Reboot host
 
-  handlers:
-    - name: Reboot host
-      reboot:
-        msg: "Reboot by Ansible"
-        connect_timeout: 5
-        reboot_timeout: 600
-        pre_reboot_delay: 0
-        post_reboot_delay: 30
-        test_command: whoami
-          #ansible.builtin.command: apt-get update && apt-get install -y --allow-unauthenticated docker-ce docker-ce-cli containerd.io
+    - name: Make Docker the default runtime for running pods
+      shell: |
+        cat <<EOF | sudo tee /etc/docker/daemon.json
+        {
+          "exec-opts": ["native.cgroupdriver=systemd"],
+          "log-driver": "json-file",
+          "log-opts": {
+            "max-size": "100m"
+          },
+          "storage-driver": "overlay2"
+        }
+        EOF
 
+    - name: Restarting the Docker daemon
+      systemd:
+        name: docker
+        enabled: yes
+        daemon_reload: yes
+        state: restarted

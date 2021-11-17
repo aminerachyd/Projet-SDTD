@@ -1,0 +1,5 @@
+- become: yes
+  hosts: all
+  tasks:
+    - name: Join Kubeadm
+      shell: kubeadm join ...
