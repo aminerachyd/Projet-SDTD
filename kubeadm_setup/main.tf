@@ -9,6 +9,7 @@ variable "project_zone" {}
 variable "docker_playbook" {}
 variable "k8s_playbook" {}
 variable "kubeadm_master_playbook" {}
+variable "kubeadm_worker_playbook" {}
 
 provider "google" {
   project = "${var.project}"
@@ -108,8 +109,6 @@ resource "google_compute_instance" "masterserver" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.k8s_playbook}"
   }
 
-  // TODO Faut reboot la machine à ce niveau
-
   // Playbook d'init de Kubeadm pour le master
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.kubeadm_master_playbook}"
@@ -127,6 +126,10 @@ resource "google_compute_instance" "workerserver" {
     }
   }
 
+  metadata = {
+    ssh-keys = "${var.ssh_username}:${file(var.pub_key)}"
+  }
+
   network_interface {
     network = "default"
 
@@ -138,7 +141,35 @@ resource "google_compute_instance" "workerserver" {
 
   depends_on = [
     google_project_service.compute_service,
+    google_compute_instance.masterserver,
   ]
+
+  // On lance le remote-exec avant pour s'assurer que la machine est bien en marche avant de lancer le local-exec
+  provisioner "remote-exec" {
+    inline = ["sudo apt update"]
+
+    connection {
+      host = self.network_interface.0.access_config.0.nat_ip
+      type = "ssh"
+      user = "${var.ssh_username}"
+      private_key = file(var.pvt_key)
+    }
+  }
+
+  // Playbook d'installation de Docker
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.docker_playbook}"
+  }
+
+  // Playbook d'installation de Kubeadm
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.k8s_playbook}"
+  }
+
+  // Playbook de join Kubeadm
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.kubeadm_worker_playbook}"
+  }
 }
 
 // Output après un apply

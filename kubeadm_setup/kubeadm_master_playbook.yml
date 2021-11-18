@@ -18,3 +18,10 @@
     - name: Install network plugin
       shell: sudo -u amine kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
+    - name: Generate join command
+      command: sudo kubeadm token create --print-join-command
+      register: join_command
+
+    - name: Copy join command
+      become: false
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"

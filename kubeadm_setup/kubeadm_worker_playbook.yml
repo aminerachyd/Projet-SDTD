@@ -1,5 +1,11 @@
 - become: yes
   hosts: all
   tasks:
-    - name: Join Kubeadm
-      shell: kubeadm join ...
+    #    - name: Join Kubeadm
+    #  shell: sudo kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+    - name: Copy join command to server location
+      copy: src=join-command dest=/tmp/join-command.sh mode=077
+
+    - name: Join the node to cluster
+      command: sudo sh /tmp/join-command.sh
+
