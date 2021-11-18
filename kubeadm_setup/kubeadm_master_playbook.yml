@@ -6,10 +6,15 @@
 
     - name: Create .kube directory
       file:
-        path: ~/.kube
+        path: /home/amine/.kube
         state: directory
 
     - name: Copy k8s configuration to .kube dir
-      copy:
-        src: /etc/kubernetes/admin.conf
-        dest: ~/.kube/conf
+      shell: sudo cp -i /etc/kubernetes/admin.conf /home/amine/.kube/config
+
+    - name: Change ownership of .kube config
+      shell: sudo chown amine:amine /home/amine/.kube/config
+
+    - name: Install network plugin
+      shell: sudo -u amine kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
