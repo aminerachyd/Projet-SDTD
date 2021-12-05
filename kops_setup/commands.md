@@ -26,3 +26,9 @@ kops validate cluster --wait 10m
 ```
 
 On pourrait après output la configuration dans un fichier terraform.  
+
+Creation d'un cluster avec plusieurs masters, le nombre des masters est égal au nombre de zones (chaque master dans une zone), le nombre des workers peut varier  
+Le nombre maximum de workers que j'ai pu mettre est de 5, ça fait une distribution de 2 2 1 sur les 3 régions  
+```
+kops create cluster --node-count 5 --zones europe-west1-b,europe-west1-c,europe-west1-d --master-zones europe-west1-b,europe-west1-c,europe-west1-d simple.k8s.local
+```
