@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt update && apt install openjdk-8-jdk apt-transport-https -y;
+sudo apt update && sudo apt install openjdk-8-jdk apt-transport-https -y;
 
 sudo apt install apt-transport-https -y;
 

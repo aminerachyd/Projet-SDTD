@@ -1,0 +1,22 @@
+- become: yes
+  hosts: all
+  tasks:
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: ['apt-transport-https','openjdk-8-jdk']
+
+    - name: Add Cassandra GPG apt key
+      apt_key:
+        url: https://www.apache.org/dist/cassandra/KEYS
+        state: present
+
+    - name: Add Cassandra repository
+      apt_repository:
+        repo: deb http://www.apache.org/dist/cassandra/debian 311x main
+        state: present
+
+    - name: Update apt and install cassandra
+      apt:
+        name: cassandra
+        state: latest
+        update_cache: yes

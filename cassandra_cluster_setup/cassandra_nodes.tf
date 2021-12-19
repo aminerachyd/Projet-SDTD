@@ -7,8 +7,8 @@ resource "google_compute_address" "static_node2" {
 }
 
 // Un compute engine
-resource "google_compute_instance" "node1" {
-  name         = "node1"
+resource "google_compute_instance" "cassandra_node1" {
+  name         = "cassandra-node1"
   machine_type = "e2-highcpu-2"
 
   boot_disk {
@@ -41,11 +41,15 @@ resource "google_compute_instance" "node1" {
       private_key = file(var.pvt_key)
     }
   }
+
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.cassandra_setup_playbook}"
+  }
 }
 
 
-resource "google_compute_instance" "node2" {
-  name         = "node2"
+resource "google_compute_instance" "cassandra_node2" {
+  name         = "cassandra-node2"
   machine_type = "e2-highcpu-2"
 
   boot_disk {
@@ -77,5 +81,9 @@ resource "google_compute_instance" "node2" {
       user        = var.ssh_username
       private_key = file(var.pvt_key)
     }
+  }
+
+  provisioner "local-exec" {
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.cassandra_setup_playbook}"
   }
 }

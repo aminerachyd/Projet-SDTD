@@ -4,6 +4,7 @@ variable "ssh_username" {}
 variable "project" {}
 variable "project_region" {}
 variable "project_zone" {}
+variable "cassandra_setup_playbook" {}
 
 provider "google" {
   project = var.project

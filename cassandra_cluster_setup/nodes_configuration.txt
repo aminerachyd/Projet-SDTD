@@ -1,0 +1,6 @@
+start_rpc: true
+rpc_address: 0.0.0.0
+broadcast_rpc_address: public_ip
+broadcast_address: public_ip
+listen_address: private_ip
+seeds: list of public ips, including the same host

@@ -7,4 +7,4 @@ project = "projet-sdtd"
 project_region = "europe-west1"
 project_zone = "europe-west1-b"
 
-#cassandra_setup_playbook = "playbooks/cassandra_playbook.yml"
+cassandra_setup_playbook = "playbooks/cassandra_setup_playbook.yml"
