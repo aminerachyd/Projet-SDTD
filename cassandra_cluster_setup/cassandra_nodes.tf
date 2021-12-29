@@ -87,3 +87,19 @@ resource "google_compute_instance" "cassandra_node2" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ${var.ssh_username} -i '${self.network_interface.0.access_config.0.nat_ip},' --private-key ${var.pvt_key} ${var.cassandra_setup_playbook}"
   }
 }
+
+output "node1_self_ip" {
+  value = google_compute_instance.cassandra_node1.network_interface.0.network_ip
+}
+
+output "node1_public_ip" {
+  value = google_compute_instance.cassandra_node1.network_interface.0.access_config.0.nat_ip
+}
+
+output "node2_self_ip" {
+  value = google_compute_instance.cassandra_node2.network_interface.0.network_ip
+}
+
+output "node2_public_ip" {
+  value = google_compute_instance.cassandra_node2.network_interface.0.access_config.0.nat_ip
+}

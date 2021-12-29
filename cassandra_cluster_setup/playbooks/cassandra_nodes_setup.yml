@@ -1,0 +1,38 @@
+- become: yes
+  hosts: all
+  tasks:
+    - name: Start rpc
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: start_rpc
+        line: 'start_rpc: true'
+
+    - name: Set rpc_address
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: 'rpc_address: localhost'
+        line: 'rpc_address: 0.0.0.0'
+
+    - name: Set broadcast_rpc_address
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: broadcast_rpc_address
+        line: 'broadcast_rpc_address: public_ip'
+
+    - name: Set broadcast_address
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: '# broadcast_address: 1.2.3.4'
+        line: 'broadcast_address: public_ip'
+
+    - name: Set listen_address
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: 'listen_address: localhost'
+        line: 'listen_address: private_ip'
+
+    - name: Set seeds
+      lineinfile:
+        path: /etc/cassandra/cassandra.yaml
+        search_string: seeds
+        line: "\t  - seeds: \"listhh\""
