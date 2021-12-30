@@ -17,22 +17,31 @@
       lineinfile:
         path: /etc/cassandra/cassandra.yaml
         search_string: broadcast_rpc_address
-        line: 'broadcast_rpc_address: public_ip'
+        line: 'broadcast_rpc_address: {{self_public}}'
 
     - name: Set broadcast_address
       lineinfile:
         path: /etc/cassandra/cassandra.yaml
         search_string: '# broadcast_address: 1.2.3.4'
-        line: 'broadcast_address: public_ip'
+        line: 'broadcast_address: {{self_public}}'
 
     - name: Set listen_address
       lineinfile:
         path: /etc/cassandra/cassandra.yaml
         search_string: 'listen_address: localhost'
-        line: 'listen_address: private_ip'
+        line: 'listen_address: {{self_private}}'
 
     - name: Set seeds
       lineinfile:
         path: /etc/cassandra/cassandra.yaml
         search_string: seeds
-        line: "\t  - seeds: \"listhh\""
+        line: "          - seeds: \"{{self_public}},{{other_public}}\""
+
+    - name: Flush nodetool
+      shell:
+        cmd: nodetool flush system
+
+    - name: Restart cassandra service
+      systemd:
+        name: cassandra
+        state: restarted

@@ -1,3 +1,5 @@
 .terraform*
 *.tfstate*
 join-command
+NODE1_JSON.json
+NODE2_JSON.json
