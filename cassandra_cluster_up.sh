@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd ./cassandra_cluster_setup;
-terraform apply -var-file=variables.tfvars -auto-approve;
+terraform apply -auto-approve;
 ./cassandra_nodes_configuration.sh;
 

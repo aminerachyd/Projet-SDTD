@@ -9,7 +9,7 @@ resource "google_compute_address" "static_node2" {
 // Un compute engine
 resource "google_compute_instance" "cassandra_node1" {
   name         = "cassandra-node1"
-  machine_type = "e2-highcpu-2"
+  machine_type = "n1-standard-2"
 
   boot_disk {
     initialize_params {
@@ -50,7 +50,7 @@ resource "google_compute_instance" "cassandra_node1" {
 
 resource "google_compute_instance" "cassandra_node2" {
   name         = "cassandra-node2"
-  machine_type = "e2-highcpu-2"
+  machine_type = "n1-standard-2"
 
   boot_disk {
     initialize_params {
