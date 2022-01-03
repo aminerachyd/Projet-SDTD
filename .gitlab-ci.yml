@@ -1,0 +1,17 @@
+stage:
+  - push
+
+variables:
+  IMAGE_NAME: aminerachyd/sdtd
+  DOCKERHUB_ACCESS_TOKEN_RACHYD: ${DOCKERHUB_ACCESS_TOKEN_RACHYD}
+
+push:
+  stage: push
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login --username aminerachyd --password $DOCKERHUB_ACCESS_TOKEN_RACHYD
+    - docker build . -t $IMAGE_NAME
+    - docker push $IMAGE_NAME
+

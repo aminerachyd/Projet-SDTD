@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# Gcloud login
+gcloud auth application-default login
+
+echo "Saisissez l'ID de votre projet dans GCP"
+read project_name
+
+gcloud config set project $project_name
+
+# Configuration Kops
+export KOPS_STATE_STORE="gs://my-kops-state/";
+export KOPS_FEATURE_FLAGS=AlphaAllowGCE;
+gsutil mb gs://my-kops-state/;
+
+# Generation de clé ssh
+ssh-keygen;
+
 export TF_VAR_pvt_key="~/.ssh/id_rsa";
 export TF_VAR_pub_key="~/.ssh/id_rsa.pub";
 export TF_VAR_ssh_username=$(whoami);
