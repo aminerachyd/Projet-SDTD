@@ -10,9 +10,10 @@ read project_name
 gcloud config set project $project_name
 
 # Configuration Kops
-export KOPS_STATE_STORE="gs://my-kops-state/";
+export KOPS_STATE_STORE="gs://my-kops-state$RANDOM/";
 export KOPS_FEATURE_FLAGS=AlphaAllowGCE;
-gsutil mb gs://my-kops-state/;
+echo $KOPS_STATE_STORE > kops_state_store;
+gsutil mb $KOPS_STATE_STORE;
 
 # Generation de clé ssh
 ssh-keygen;
