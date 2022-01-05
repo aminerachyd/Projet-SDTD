@@ -2,6 +2,7 @@
 
 # Gcloud login
 gcloud auth application-default login
+gcloud auth login
 
 echo "Saisissez l'ID de votre projet dans GCP"
 read project_name
