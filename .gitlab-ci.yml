@@ -7,11 +7,11 @@ variables:
 
 push:
   stage: push
-  image: docker:latest
+  image: docker:19.03.12
   services:
-    - docker:dind
+    - docker:19.03.12-dind
   script:
-    - docker login --username aminerachyd --password $DOCKERHUB_ACCESS_TOKEN_RACHYD
+    - docker login -u aminerachyd -p $DOCKERHUB_ACCESS_TOKEN_RACHYD
     - docker build . -t $IMAGE_NAME
     - docker push $IMAGE_NAME
 
