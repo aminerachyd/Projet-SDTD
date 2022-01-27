@@ -1,0 +1,21 @@
+dans kafka : bin/zookeeper-server-start.sh config/zookeeper.properties
+
+dans kafka : bin/kafka-server-start.sh config/server.properties-1
+dans kafka : bin/kafka-server-start.sh config/server.properties-2
+dans kafka : bin/kafka-server-start.sh config/server.properties-3
+
+pour ces commande voir le tuto du prof, cé tou pareil
+
+dans /code/kafka_stream_app : sbt package
+dans /code/kafka_stream_app : ../../spark-3.0.1-bin-hadoop2.7/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka-0-10_2.12:3.0.1 --master local[*] ./target/scala-2.12/kafka-stream-app_2.12-1.0.jar localhost:9092 group1 meteo
+
+group1 n'est pas utilisé
+meteo doit etre coherent avec ce qui est utilisé dans le code du producer
+le retour est le min, max, avg glissant pour chaque ville. La "fenetre" pour le glissement peut etre modifier dans
+le corps de l'appli (Seconds(10) a modifié). Une fois fait il faut re-sbt package et re-spark-submit
+
+lancer autant de fois que voulu : python3 producer.py
+lance un producer qui va envoyer des temperature pour un departement au hasard
+plus on a de producer, plus on aura de departement
+on peut avoir des producer qui traite le meme departement (aleatoire, 1 chance sur pas beaucoup)
+
